@@ -52,7 +52,7 @@ func SpawnOpen(socket string, argv []string) error {
 
 	logrus.Debug("nvim executable: %v", e)
 
-	err = syscall.Exec(e, []string{"nvim", "--listen", socket, "go.mod"},
+	err = syscall.Exec(e, append([]string{"nvim", "--listen", socket}, argv...),
 		os.Environ())
 	if err != nil {
 		logrus.Fatalf("failed to start nvim, %v", err)

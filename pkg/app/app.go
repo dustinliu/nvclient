@@ -2,7 +2,6 @@ package app
 
 import (
 	"os"
-	"path/filepath"
 	"runtime"
 
 	"github.com/adrg/xdg"
@@ -14,9 +13,9 @@ import (
 )
 
 const (
-	socket_env      = "NVIM_LISTEN_ADDRESS"
-	server_name_env = "NVC_SERVER_NAME"
-	default_socket  = "nvclient/nvim.socket"
+	socket_env          = "NVIM_LISTEN_ADDRESS"
+	server_name_env     = "NVC_SERVER_NAME"
+	default_server_name = "nvim"
 )
 
 var (
@@ -57,12 +56,16 @@ func run(c *cli.Context) error {
 	server := os.Getenv(server_name_env)
 	if socket == "" && server == "" {
 		var err error
-		socket, err = xdg.StateFile(default_socket)
+		socket, err = socketFile(default_server_name)
 		if err != nil {
 			return cli.Exit(err, actions.IOError)
 		}
 	} else if socket == "" {
-		socket = socketFile(server)
+		var err error
+		socket, err = socketFile(server)
+		if err != nil {
+			return cli.Exit(err, actions.IOError)
+		}
 	}
 	logrus.Debug("socket: %v\n", socket)
 
@@ -74,8 +77,12 @@ func run(c *cli.Context) error {
 	return actions.SpawnOpen(socket, c.Args().Slice())
 }
 
-func socketFile(name string) string {
-	return filepath.Join(os.TempDir(), name+".socket")
+func socketFile(name string) (string, error) {
+	socket, err := xdg.StateFile("nvclient/" + name + ".socket")
+	if err != nil {
+		return "", err
+	}
+	return socket, nil
 }
 
 func initApp(c *cli.Context) error {
