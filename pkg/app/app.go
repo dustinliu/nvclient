@@ -13,27 +13,25 @@ import (
 )
 
 const (
-	socket_env          = "NVIM_LISTEN_ADDRESS"
-	server_name_env     = "NVC_SERVER_NAME"
-	default_server_name = "nvim"
+	socket_env = "NVIM_LISTEN_ADDRESS"
 )
 
 var (
-	DebugFlag = &cli.BoolFlag{
+	debugFlag = &cli.BoolFlag{
 		Name:    "debug",
 		Usage:   "enable debug",
 		Aliases: []string{"d"},
 	}
 
-	ServerFlag = &cli.StringFlag{
-		Name:    "server",
-		Usage:   "nvim server name",
+	socketFlag = &cli.StringFlag{
+		Name:    "socket",
+		Usage:   "nvim socket file",
 		Aliases: []string{"s"},
 	}
 
 	flags = []cli.Flag{
-		ServerFlag,
-		DebugFlag,
+		socketFlag,
+		debugFlag,
 	}
 )
 
@@ -52,20 +50,11 @@ func NewApp() *cli.App {
 }
 
 func run(c *cli.Context) error {
-	socket := os.Getenv(socket_env)
-	server := os.Getenv(server_name_env)
-	if socket == "" && server == "" {
-		var err error
-		socket, err = socketFile(default_server_name)
-		if err != nil {
-			return cli.Exit(err, actions.IOError)
-		}
-	} else if socket == "" {
-		var err error
-		socket, err = socketFile(server)
-		if err != nil {
-			return cli.Exit(err, actions.IOError)
-		}
+	var socket string
+	if socketFlag.IsSet() {
+		socket = socketFlag.Value
+	} else {
+		socket = os.Getenv(socket_env)
 	}
 	logrus.Debug("socket: %v\n", socket)
 
@@ -86,7 +75,7 @@ func socketFile(name string) (string, error) {
 }
 
 func initApp(c *cli.Context) error {
-	if DebugFlag.Value {
+	if debugFlag.Value {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
