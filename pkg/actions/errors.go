@@ -4,4 +4,5 @@ const (
 	Success = iota
 	ClientError
 	NotSupportError
+	IOError
 )

@@ -14,12 +14,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const (
-	SOCKET_ENV      = "NVIM_LISTEN_ADDRESS"
-	SERVER_NAME_ENV = "NVC_SERVER_NAME"
-	DEFAULT_SOCKET  = "nvclient"
-)
-
 func findWindowToActive() (nvim.Window, error) {
 	nvc := client.Client()
 	appFs := afero.NewOsFs()
@@ -50,7 +44,7 @@ func findWindowToActive() (nvim.Window, error) {
 	return windows[funk.MaxInt([]int{0, len(windows) - 1})], nil
 }
 
-func spawnNvim(name string) {
+func SpawnOpen(socket string, argv []string) error {
 	e, err := exec.LookPath("nvim")
 	if err != nil {
 		logrus.Fatal("failed to locate then nvim  executable")
@@ -58,32 +52,15 @@ func spawnNvim(name string) {
 
 	logrus.Debug("nvim executable: %v", e)
 
-	err = syscall.Exec(e, []string{"nvim", "--listen", name, "go.mod"},
+	err = syscall.Exec(e, []string{"nvim", "--listen", socket, "go.mod"},
 		os.Environ())
 	if err != nil {
 		logrus.Fatalf("failed to start nvim, %v", err)
 	}
+	return nil
 }
 
-func socketFile(name string) string {
-	return filepath.Join(os.TempDir(), "name.socket")
-}
-
-func OpenFile(c *cli.Context) error {
-	socket := os.Getenv(SOCKET_ENV)
-	if socket == "" {
-		serverName := os.Getenv(SERVER_NAME_ENV)
-		if serverName == "" {
-			serverName = DEFAULT_SOCKET
-		}
-		spawnNvim(serverName)
-		return nil
-	}
-
-	if c.Args().Len() < 1 {
-		return nil
-	}
-
+func RpcOpen(socket string, argv []string) error {
 	nvc := client.Client()
 	window, err := findWindowToActive()
 	if err != nil {
@@ -93,8 +70,8 @@ func OpenFile(c *cli.Context) error {
 		return cli.Exit(err, ClientError)
 	}
 
-	for i := 0; i < c.Args().Len(); i++ {
-		file, err := filepath.Abs(c.Args().Get(i))
+	for i := 0; i < len(argv); i++ {
+		file, err := filepath.Abs(argv[i])
 		if err != nil {
 			logrus.Fatal(err)
 		}
