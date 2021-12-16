@@ -1,4 +1,4 @@
-package actions
+package nvc
 
 import (
 	"os"
@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/dustinliu/nvclient/pkg/client"
 	"github.com/neovim/go-client/nvim"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -15,7 +14,7 @@ import (
 )
 
 func findWindowToActive() (nvim.Window, error) {
-	nvc := client.Client()
+	nvc := Client()
 	appFs := afero.NewOsFs()
 
 	windows, err := nvc.Windows()
@@ -44,6 +43,18 @@ func findWindowToActive() (nvim.Window, error) {
 	return windows[funk.MaxInt([]int{0, len(windows) - 1})], nil
 }
 
+func OpenFiles(c *cli.Context) error {
+	socket := SocketFile()
+	logrus.Debug("socket: %v\n", socket)
+
+	fs := afero.NewOsFs()
+	v, _ := afero.Exists(fs, socket)
+	if v {
+		return RpcOpen(socket, c.Args().Slice())
+	}
+	return SpawnOpen(socket, c.Args().Slice())
+}
+
 func SpawnOpen(socket string, argv []string) error {
 	e, err := exec.LookPath("nvim")
 	if err != nil {
@@ -52,8 +63,12 @@ func SpawnOpen(socket string, argv []string) error {
 
 	logrus.Debug("nvim executable: %v", e)
 
-	err = syscall.Exec(e, append([]string{"nvim", "--listen", socket}, argv...),
-		os.Environ())
+	var args = []string{"nvim"}
+	if len(socket) > 0 {
+		args = append(args, "--listen", socket)
+	}
+	args = append(args, argv...)
+	err = syscall.Exec(e, args, os.Environ())
 	if err != nil {
 		logrus.Fatalf("failed to start nvim, %v", err)
 	}
@@ -61,7 +76,7 @@ func SpawnOpen(socket string, argv []string) error {
 }
 
 func RpcOpen(socket string, argv []string) error {
-	nvc := client.Client()
+	nvc := Client()
 	window, err := findWindowToActive()
 	if err != nil {
 		return cli.Exit(err, ClientError)

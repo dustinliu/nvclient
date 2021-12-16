@@ -1,4 +1,4 @@
-package actions
+package nvc
 
 const (
 	Success = iota
