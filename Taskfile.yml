@@ -1,0 +1,19 @@
+version: '3'
+
+vars:
+  target: nvclient
+
+tasks:
+  build:
+    cmds:
+      - go build -v -o {{.target}} main.go
+
+  clean:
+    cmds:
+      - rm -f nvclient
+      - rm -rf dist
+
+  release:
+    deps: [build]
+    cmds:
+      - goreleaser release
