@@ -70,6 +70,10 @@ func (nvc *Client) Close() error {
 }
 
 func (nvc *Client) rpcOpen(socket string, argv []string) error {
+	if len(argv) == 0 {
+		return nil
+	}
+
 	window, err := nvc.findWindowToActive()
 	if err != nil {
 		return err
