@@ -1,4 +1,6 @@
 # nvclient
+[![nvclient pipeline](https://github.com/dustinliu/nvclient/actions/workflows/build.yml/badge.svg)](https://github.com/dustinliu/nvclient/actions/workflows/build.yml)
+
 open a file for editing in an already running nvim
 
 ## How it works

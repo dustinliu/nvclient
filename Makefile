@@ -11,6 +11,7 @@ os = $(word 1, $(temp))
 arch = $(word 2, $(temp))
 target_dir = '$(build_dir)/$(os)-$(arch)'
 executable = $($(os))
+archive = $(dist_dir)/$(app)-$(os)-$(arch).tar.gz
 
 PLATFORMS := linux/amd64 linux/arm64 darwin/amd64 darwin/arm64
 
@@ -22,6 +23,7 @@ $(PLATFORMS):
 	@mkdir -p $(dist_dir)
 	@GOOS=$(os) GOARCH=$(arch) go build -o $(target_dir)/$(executable)
 	@tar zcf $(dist_dir)/$(app)-$(os)-$(arch).tar.gz -C $(target_dir) $(executable)
+	@cd $(dist_dir); md5sum $(app)-$(os)-$(arch).tar.gz >> checksums.txt
 
 vet:
 	@echo running go vet...
