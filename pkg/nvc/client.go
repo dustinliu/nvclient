@@ -127,15 +127,13 @@ func (nvc *Client) findWindowToActive() (nvim.Window, error) {
 		if err != nil {
 			return -1, err
 		}
-		name, err := nvc.nvim.BufferName(buffer)
+		var t string
+		err = nvc.nvim.BufferOption(buffer, "buftype", &t)
 		if err != nil {
 			return -1, err
 		}
-		v, err := afero.Exists(nvc.fs, name)
-		if err != nil {
-			continue
-		}
-		if v {
+		LogEntry().Debugf("window%d, buftype: [%v]", w, t)
+		if t == "" {
 			return w, nil
 		}
 	}
