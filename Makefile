@@ -22,7 +22,11 @@ endif
 
 PLATFORMS := linux/amd64 linux/arm64 darwin/amd64 darwin/arm64
 
-build: $(PLATFORMS)
+build: generate $(PLATFORMS)
+
+generate:
+	@echo 'generate mock codes'
+	@go generate ./...
 
 $(PLATFORMS):
 	@echo building $(os)/$(arch)...
@@ -32,12 +36,12 @@ $(PLATFORMS):
 	@tar zcf $(dist_dir)/$(app)-$(os)-$(arch).tar.gz -C $(target_dir) $(executable)
 	@cd $(dist_dir); $(md5) $(app)-$(os)-$(arch).tar.gz >> checksums.txt
 
-vet:
+vet: generate
 	@echo running go vet...
 	@go vet ./...
 	@echo
 
-test:
+test: generate
 	@echo testing...
 	@go test -timeout 10s ./...
 	@echo
@@ -50,4 +54,4 @@ clean:
 
 all: build
 
-.PHONY: build clean test vet $(PLATFORMS)
+.PHONY: build clean test vet generate $(PLATFORMS)

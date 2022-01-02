@@ -22,12 +22,19 @@ type Client struct {
 	once   sync.Once
 	socket string
 	fs     afero.Fs
+	tmux   Tmux
 }
 
 func (nvc *Client) init() error {
 	var e error
 	nvc.once.Do(func() {
-		nvc.fs = afero.NewOsFs()
+		if nvc.fs == nil {
+			nvc.fs = afero.NewOsFs()
+		}
+
+		if nvc.tmux == nil {
+			nvc.tmux = &TmuxImpl{}
+		}
 
 		if err := nvc.initSocket(); err != nil {
 			return
@@ -146,17 +153,33 @@ func (nvc *Client) initSocket() error {
 	if nvc.socket != "" {
 		LogEntry().Debug("socket has been set")
 		return nil
-	} else if InTmux() {
-		nvc.socket, err = GetTmuxEnv(socket_env)
+	}
+	s := os.Getenv(socket_env)
+	if s != "" {
+		LogEntry().Debugf("env socket found: [%v]", s)
+		v, err := afero.Exists(nvc.fs, s)
+		if err == nil && v {
+			nvc.socket = s
+			LogEntry().Debugf("valid env socket: [%v]\n", nvc.socket)
+			return nil
+		}
+		LogEntry().Debugf("invalid env socket: [%v], %v\n", s, err)
+	}
+
+	if nvc.tmux.InTmux() {
+		s, err = nvc.tmux.GetTmuxEnv(socket_env)
+		LogEntry().Debugf("tmux socket found: [%v]", s)
 		if err != nil {
 			LogEntry().Debugf("get tmux socket failed: [%v]", err)
 			return err
 		}
-		LogEntry().Debugf("in tmux, socket: %s", nvc.socket)
-	} else {
-		nvc.socket = os.Getenv(socket_env)
-		LogEntry().Debugf("env socket: [%v]\n", nvc.socket)
+		v, err := afero.Exists(nvc.fs, s)
+		if err == nil && v {
+			nvc.socket = s
+			LogEntry().Debugf("valid tmux env socket: [%v]\n", nvc.socket)
+			return nil
+		}
+		LogEntry().Debugf("invalid tmux env socket: [%v], %v\n", s, err)
 	}
-
 	return err
 }

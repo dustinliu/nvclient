@@ -4,7 +4,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/dustinliu/nvclient/pkg/nvc"
+	"github.com/dustinliu/nvclient/internal/nvc"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
