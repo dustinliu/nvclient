@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	socket_env = "NVIM_LISTEN_ADDRESS"
+	socket_env = "NVIM"
 	tmux_env   = "TMUX"
 )
 
