@@ -53,7 +53,7 @@ clean:
 	@rm -rf dist
 
 release:
-	@echo "git tag `cat version`"
+	git tag `cat version`
 	git push
 
 all: build
