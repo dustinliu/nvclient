@@ -3,6 +3,7 @@ module github.com/dustinliu/nvclient
 go 1.17
 
 require (
+	github.com/golang/mock v1.6.0
 	github.com/neovim/go-client v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
@@ -14,7 +15,6 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect

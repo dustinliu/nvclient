@@ -32,7 +32,7 @@ $(PLATFORMS):
 	@echo building $(os)/$(arch)...
 	@mkdir -p $(target_dir)
 	@mkdir -p $(dist_dir)
-	@GOOS=$(os) GOARCH=$(arch) go build -o $(target_dir)/$(executable)
+	@GOOS=$(os) GOARCH=$(arch) go build -ldflags "-X main.version=`cat version`" -o $(target_dir)/$(executable)
 	@tar zcf $(dist_dir)/$(app)-$(os)-$(arch).tar.gz -C $(target_dir) $(executable)
 	@cd $(dist_dir); $(md5) $(app)-$(os)-$(arch).tar.gz >> checksums.txt
 
@@ -51,6 +51,10 @@ clean:
 	@go clean -testcache
 	@rm -rf build
 	@rm -rf dist
+
+release:
+	@echo "git tag `cat version`"
+	git push
 
 all: build
 

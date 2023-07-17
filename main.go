@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 
@@ -15,11 +16,19 @@ const (
 	NotSupportError
 )
 
+var version string
+
 var (
 	debugFlag = &cli.BoolFlag{
 		Name:    "debug",
 		Usage:   "enable debug",
 		Aliases: []string{"d"},
+	}
+
+	versionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Usage:   "print version",
+		Aliases: []string{"v"},
 	}
 
 	socketFlag = &cli.StringFlag{
@@ -31,6 +40,7 @@ var (
 	flags = []cli.Flag{
 		socketFlag,
 		debugFlag,
+		versionFlag,
 	}
 
 	client = &nvc.Client{}
@@ -50,6 +60,11 @@ func initApp(c *cli.Context) error {
 }
 
 func run(c *cli.Context) error {
+	if c.IsSet(versionFlag.Name) {
+		fmt.Println(version)
+		return nil
+	}
+
 	if c.IsSet(socketFlag.Name) {
 		client.SetSocket(c.String(socketFlag.Name))
 	}
