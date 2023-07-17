@@ -54,7 +54,7 @@ clean:
 
 release:
 	git tag `cat version`
-	git push
+	git push origin `cat version`
 
 all: build
 
